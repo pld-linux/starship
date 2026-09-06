@@ -1,0 +1,13 @@
+# shadow-rs declares rerun-if-changed on $OUT_DIR/shadow.rs, the file its own build
+# script writes, so the script is permanently dirty and every cargo invocation
+# relinks starship - making %install redo the whole LTO link.
+--- a/vendor/shadow-rs/src/build.rs
++++ b/vendor/shadow-rs/src/build.rs
+@@ -158,7 +158,6 @@ impl BuildPattern {
+ 
+         other_keys.for_each(|key| println!("cargo:rerun-if-env-changed={key}"));
+         println!("cargo:rerun-if-env-changed={DEFINE_SOURCE_DATE_EPOCH}");
+-        println!("cargo:rerun-if-changed={out_dir}/{DEFINE_SHADOW_RS}");
+     }
+ }
+ 

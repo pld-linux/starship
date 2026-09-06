@@ -3,17 +3,18 @@
 Summary:	The minimal, blazing-fast, and infinitely customizable cross-shell prompt
 Name:		starship
 Version:	1.26.0
-Release:	1
+Release:	2
 License:	ISC
 Group:		Applications/Shells
 Source0:	https://github.com/starship/starship/archive/v%{version}/%{name}-%{version}.tar.gz
 # Source0-md5:	3e4497aacfc95e10c1eb9abc0a6a7be2
-# cd starship-%{version}
+# cd starship-%%{version}
 # cargo vendor
 # cd ..
-# tar cJf starship-crates-%{version}.tar.xz starship-%{version}/{vendor,Cargo.lock}
+# tar cJf starship-crates-%%{version}.tar.xz starship-%%{version}/{vendor,Cargo.lock}
 Source1:	%{name}-crates-%{crates_ver}.tar.xz
 # Source1-md5:	24a69a7f53a7975fdc34bb073e12cbf0
+Patch0:		%{name}-shadow-rs-rerun-loop.patch
 URL:		https://starship.rs/
 BuildRequires:	cargo
 BuildRequires:	rpm-build >= 4.6
@@ -65,6 +66,9 @@ Zsh completion for starship.
 %setup -q -a1
 
 %{__mv} %{name}-%{crates_ver}/* .
+%patch -P0 -p1
+# cargo verifies vendored sources against .cargo-checksum.json
+sed -i -e "s|\"src/build.rs\":\"[0-9a-f]*\"|\"src/build.rs\":\"$(sha256sum vendor/shadow-rs/src/build.rs | cut -d' ' -f1)\"|" vendor/shadow-rs/.cargo-checksum.json
 sed -i -e 's/@@VERSION@@/%{version}/' Cargo.lock
 
 # use our offline registry
@@ -82,12 +86,22 @@ EOF
 
 %build
 export CARGO_HOME="$(pwd)/.cargo"
+%ifarch %{ix86}
+# fat LTO with PLD's forced debuginfo exceeds the 32-bit rustc address space
+export CARGO_PROFILE_RELEASE_LTO=thin
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+%endif
 
 %cargo_build --frozen
 
 %install
 rm -rf $RPM_BUILD_ROOT
 export CARGO_HOME="$(pwd)/.cargo"
+%ifarch %{ix86}
+# fat LTO with PLD's forced debuginfo exceeds the 32-bit rustc address space
+export CARGO_PROFILE_RELEASE_LTO=thin
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+%endif
 
 install -d $RPM_BUILD_ROOT{%{bash_compdir},%{fish_compdir},%{zsh_compdir}}
 
