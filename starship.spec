@@ -1,19 +1,19 @@
-%define		crates_ver	1.25.1
+%define		crates_ver	1.26.0
 
 Summary:	The minimal, blazing-fast, and infinitely customizable cross-shell prompt
 Name:		starship
-Version:	1.25.1
+Version:	1.26.0
 Release:	1
 License:	ISC
 Group:		Applications/Shells
 Source0:	https://github.com/starship/starship/archive/v%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	bb8175f295eb734cad5c26fddc2a5eea
+# Source0-md5:	3e4497aacfc95e10c1eb9abc0a6a7be2
 # cd starship-%{version}
 # cargo vendor
 # cd ..
 # tar cJf starship-crates-%{version}.tar.xz starship-%{version}/{vendor,Cargo.lock}
 Source1:	%{name}-crates-%{crates_ver}.tar.xz
-# Source1-md5:	ca10f1e32ae9968b2387b3b4b09cc6c7
+# Source1-md5:	24a69a7f53a7975fdc34bb073e12cbf0
 URL:		https://starship.rs/
 BuildRequires:	cargo
 BuildRequires:	rpm-build >= 4.6
@@ -71,7 +71,7 @@ sed -i -e 's/@@VERSION@@/%{version}/' Cargo.lock
 export CARGO_HOME="$(pwd)/.cargo"
 
 mkdir -p "$CARGO_HOME"
-cat >.cargo/config <<EOF
+cat >.cargo/config.toml <<EOF
 [source.crates-io]
 registry = 'https://github.com/rust-lang/crates.io-index'
 replace-with = 'vendored-sources'
@@ -101,7 +101,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc CHANGELOG.md CODE_OF_CONDUCT.md CONTRIBUTING.md LICENSE README.md SECURITY.md
+%doc AI_POLICY.md CHANGELOG.md CODE_OF_CONDUCT.md CONTRIBUTING.md LICENSE README.md SECURITY.md
 %attr(755,root,root) %{_bindir}/starship
 
 %files -n bash-completion-starship
